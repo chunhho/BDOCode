@@ -18,8 +18,8 @@ client = discord.Client()
 
 def ImageToAttendance(url):
   myDict = dataProcessing(url)
-  for key, value in myDict.items():
-    print(key, '->', value)
+  #for key, value in myDict.items():
+  #  print(key, '->', value)
   return myDict
 
 def generateFile(myData, myDate=None):
@@ -60,7 +60,6 @@ def dataProcessing(url):
   FamilyNameIndex = [i for i, s in enumerate(rawData) if 'Family (C' in s][0]
   ActivityIndex = [i for i, s in enumerate(rawData) if 'Activity (?' in s][0]
   ParticipateIndex = [i for i, s in enumerate(rawData) if 'Participate' in s][0]
-  print(ParticipateIndex)
 
   myFamily = rawData[FamilyNameIndex + 1:ActivityIndex]
   myFamilyNamesOnly = []
@@ -72,8 +71,7 @@ def dataProcessing(url):
 
     myParticipation = rawData[ParticipateIndex + 1:-1]
   
-    result = dict(zip(myFamilyNamesOnly, myParticipation))
-
+  result = dict(zip(myFamilyNamesOnly, myParticipation))
   return result
 
 def filterData(myDate, option='Yes', myData=None):
@@ -150,7 +148,7 @@ async def on_message(message):
   #   await message.channel.send(ocr_core(myURL))
 
 client.run(myTOKEN)
-#Attendance = 'https://cdn.discordapp.com/attachments/411788991353061389/830278096049537024/unknown.png'
+#Attendance = 'https://cdn.discordapp.com/attachments/411788991353061389/830276999066288188/unknown.png'
 #S = ImageToAttendance(Attendance)
 #generateFile(S)
 # myUrl = input("Enter link: ")
