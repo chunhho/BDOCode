@@ -17,3 +17,8 @@ Commands:
   * (ie. $getYesAttOn 010121)
   * $getNoAttOn MMDDYY 
   * (ie. $getNoAttOn 010121)
+
+* Add Person
+  * $addYesFor FamilyName Date(Optional)
+  * (ie. $addYesFor TomatoBisque) FOR TODAY
+  * (ie. $addYesFor TomatoBisque 010121) FOR SPECIFC DATE 
