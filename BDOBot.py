@@ -3,6 +3,7 @@ import os
 import ocrspace
 from dotenv import load_dotenv
 from datetime import date
+from discord.ext import commands
 
 
 load_dotenv()
@@ -14,7 +15,7 @@ OCRKey = os.getenv('OCRKEY')
 #500 calls/DAY limit
 #File Size Limit 1MB
 
-client = discord.Client()
+bot = commands.Bot(command_prefix='$')
 
 def ImageToAttendance(url):
   myDict = dataProcessing(url)
@@ -78,12 +79,15 @@ def filterData(myDate, option='Yes', myData=None):
   myDict = {}
   if myData is None:
     myFile = "NW" + str(myDate) + '.txt'
-    with open(myFile, 'r') as mainFile:
-      for line in mainFile:
-        (key, val) = line.split()
-        if val == option:
-          myDict[key] = val
-    mainFile.close()
+    if os.path.exists(myFile):
+      with open(myFile, 'r') as mainFile:
+        for line in mainFile:
+          (key, val) = line.split()
+          if val == option:
+            myDict[key] = val
+      mainFile.close()
+    else:
+      raise Exception("File does not exist.")
 
   else:
     for a in myData.keys():
@@ -93,61 +97,76 @@ def filterData(myDate, option='Yes', myData=None):
   return myDict
 
 
-@client.event
+#################################################################################################
+#
+#           Bot Command Sections
+#
+#################################################################################################
+
+
+@bot.event
 async def on_ready():
-  print('We have logged in as {0.user}'.format(client))
+  print('The Tomato Bisque is ready!')
 
-@client.event
-async def on_message(message):
-  if message.author == client.user:
-    return
-
-  if message.content.startswith('Attendance:'):
-    try:
-      myData = ImageToAttendance(message.content[11:])
+@bot.command()
+@commands.has_role('Officer')
+async def setAtt(ctx, url):
+  try:
+      myData = ImageToAttendance(url)
       generateFile(myData)
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
-      await message.channel.send(str(myData) + myResult)
-    except Exception as e:
-      await message.channel.send("Failed, try again.")
-      await message.channel.send(e)
+      await ctx.send(str(myData) + myResult)
+  except Exception as e:
+      await ctx.send("Failed, try again. Exception: " + str(e))
 
-  if message.content.startswith('AttendanceOn:'):
-    try:
-      myData = ImageToAttendance(message.content[19:])
-      generateFile(myData, message.content[13:19])
+@bot.command()
+@commands.has_role('Officer')
+async def setAttOn(ctx, date, url):
+  try:
+      myData = ImageToAttendance(url)
+      generateFile(myData, date)
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
-      await message.channel.send(str(myData) + myResult)
-    except Exception as e:
-      await message.channel.send("Failed, try again.")
-      await message.channel.send(e)
+      await ctx.send(str(myData) + myResult)
+  except Exception as e:
+      await ctx.send("Failed, try again. Exception: " + str(e))
 
-  if message.content.startswith('getYesAttOn:'):
-    try:
-      myDate = str(message.content[12:18])
-      myData = filterData(myDate)
+@bot.command()
+@commands.has_role('Officer')
+async def getYesAttOn(ctx, date):
+  try:
+      myData = filterData(date)
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
-      await message.channel.send(str(myData) + myResult)
-    except Exception as e:
-      await message.channel.send("Failed, try again.")
-      await message.channel.send(e)
+      await ctx.send(str(myData) + myResult)
+  except Exception as e:
+      await ctx.send("Failed, try again. Exception: " + str(e))
 
-  if message.content.startswith('getNoAttOn:'):
-    try:
-      myDate = str(message.content[11:17])
-      myData = filterData(myDate, 'No')
+@bot.command()
+@commands.has_role('Officer')
+async def getNoAttOn(ctx, date):
+  try:
+      myData = filterData(date, 'No')
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
-      await message.channel.send(str(myData) + myResult)
-    except Exception as e:
-      await message.channel.send("Failed, try again.")
-      await message.channel.send(e)
+      await ctx.send(str(myData) + myResult)
+  except Exception as e:
+      await ctx.send("Failed, try again. Exception: " + str(e))
+
+@bot.command()
+@commands.has_role('Officer')
+async def addYesFor(ctx, name, myDate=None):
+  try:
+    myDict = {name : 'Yes'}
+    generateFile(myDict, myDate)
+    if myDate is None:
+      today = date.today()
+      myDate = str(today.strftime("%m%d%y"))
+    await ctx.send(name + " has been added for " + myDate + ".")
+
+  except Exception as e:
+      await ctx.send("Failed, try again. Exception: " + str(e))
 
 
-  # if message.content.startswith('Warscore:'):
-  #   myURL = message.content[9:].strip()
-  #   await message.channel.send(ocr_core(myURL))
+bot.run(myTOKEN)
 
-client.run(myTOKEN)
 #Attendance = 'https://cdn.discordapp.com/attachments/411788991353061389/830276999066288188/unknown.png'
 #S = ImageToAttendance(Attendance)
 #generateFile(S)
