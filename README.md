@@ -22,3 +22,13 @@ Commands:
   * $addYesFor FamilyName Date(Optional)
   * (ie. $addYesFor TomatoBisque) FOR TODAY
   * (ie. $addYesFor TomatoBisque 010121) FOR SPECIFC DATE 
+
+* Add to Google Sheet
+  * $updateSheet Date
+  * (ie. $updateSheet 010121
+
+* Delete From Google Sheet
+  * $demolish FamilyName Master(Optional)
+  * Master is if you want to remove from Master List
+  * (ie. $demolish ExGuildie)
+  * (ie. $demolish ExGuildie True)

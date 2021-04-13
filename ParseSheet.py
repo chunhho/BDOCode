@@ -1,6 +1,8 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import time
+from random import choice
+from datetime import datetime
 
 """
 Link to YT guide for Setup: https://www.youtube.com/watch?v=cnPlKLEGR7E&ab_channel=TechWithTim
@@ -13,6 +15,7 @@ client = gspread.authorize(creds)
 
 #Access sheet
 sheet = client.open("BGH Members List").worksheet("Attendance")
+masterSheet = client.open("BGH Members List").sheet1
 
 def findColIdx(date):
     """
@@ -49,9 +52,11 @@ def uploadAttendance(attended, date):
     :param attended: A dictionary of {Family Names : 'Yes'} for attending guild members
     :param date: The date of the nodewar, used as a column header on the google sheet
     """
+    myDate = datetime.strptime(date, "%m%d%y").date()
+    myDate = str(myDate.strftime("%m/%d/%y"))
     #Find next blank row
-    colIdx = findColIdx(date)
-    sheet.update_cell(1, colIdx, date)
+    colIdx = findColIdx(myDate)
+    sheet.update_cell(1, colIdx, myDate)
     #Populate required lists
     attendedNames, allNames, newMember = generateLists(attended)
     #Create a set of column values for new sheet members
@@ -73,3 +78,31 @@ def uploadAttendance(attended, date):
         if rowIdx % 20 == 0:
             print("Hit pause...")
             time.sleep(75)
+
+def deleteUser(user, master=False):
+    try:
+        cell = sheet.find(user)
+        sheet.delete_row(cell.row)
+
+        if master:
+            mastercell = masterSheet.find(user)
+            masterSheet.delete_row(mastercell.row)
+
+        return successQuips(user)
+
+    except Exception as e:
+        return failedQuips(str(e))
+
+
+def successQuips(user):
+    quips = ['Success! FamilyName: **' + user + '** has been banished into infernal bisque land.',
+             'Success! Another one bites the dust~ FamilyName: **' + user + '** is removed.',
+             'Success! <:gunpepe:408180927123030016> **' + user + '** has been removed!',
+             'Success! FamilyName: **' + user + '** is gone. <a:PepeDance:587420384689782784> https://cdn.discordapp.com/attachments/554157458537447447/831392727412768818/unknown.png']
+    return choice(quips)
+
+def failedQuips(user):
+    quips = ['Failed... FamilyName: **' + user + '** did not get banished to the infernal bisque land. Probably never existed in the first place!',
+             'Failed... FamilyName: **' + user + '** is not found in the BGH archive.',
+             'Failed... <:feelsweirdestman:719298173083844658> FamilyName: **' + user + '** is not real.']
+    return choice(quips)
