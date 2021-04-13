@@ -4,6 +4,7 @@ import ocrspace
 from dotenv import load_dotenv
 from datetime import date
 from discord.ext import commands
+from ParseSheet import uploadAttendance
 
 
 load_dotenv()
@@ -161,6 +162,17 @@ async def addYesFor(ctx, name, myDate=None):
       myDate = str(today.strftime("%m%d%y"))
     await ctx.send(name + " has been added for " + myDate + ".")
 
+  except Exception as e:
+      await ctx.send("Failed, try again. Exception: " + str(e))
+
+@bot.command()
+@commands.has_role('Officer')
+async def updateSheet(ctx, date):
+  try:
+      myData = filterData(date)
+      await ctx.send("Updating google sheet, one moment please...")
+      uploadAttendance(myData, date)
+      await ctx.send("update complete")
   except Exception as e:
       await ctx.send("Failed, try again. Exception: " + str(e))
 
