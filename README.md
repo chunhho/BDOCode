@@ -25,7 +25,7 @@ Commands:
 
 * Add to Google Sheet
   * $updateSheet Date
-  * (ie. $updateSheet 010121
+  * (ie. $updateSheet 010121)
 
 * Delete From Google Sheet
   * $demolish FamilyName Master(Optional)
