@@ -32,3 +32,6 @@ Commands:
   * Master is if you want to remove from Master List
   * (ie. $demolish ExGuildie)
   * (ie. $demolish ExGuildie True)
+
+* Query From Google Sheet
+  * TODO
