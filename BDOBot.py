@@ -26,6 +26,15 @@ def ImageToAttendance(url):
   #  print(key, '->', value)
   return myDict
 
+def nameFixer(myData):
+  # InvalidNames : CorrectNames
+  failedFamilyNames = {"Donltalia" : "DonItalia",
+                       "Shioweeb"  : "ShioWeeb"}
+  for key, value in failedFamilyNames.items():
+    if key in myData:
+      myData[value] = myData.pop(key)
+  return myData
+
 def generateFile(myData, myDate=None):
 
   if myDate is None:
@@ -76,6 +85,7 @@ def dataProcessing(url):
     myParticipation = rawData[ParticipateIndex + 1:-1]
   
   result = dict(zip(myFamilyNamesOnly, myParticipation))
+  result = nameFixer(result)
   return result
 
 def filterData(myDate, option='Yes', myData=None):
