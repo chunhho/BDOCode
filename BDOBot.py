@@ -1,9 +1,8 @@
 import discord
+import OCRStuff
 import os
-import ocrspace
 from dotenv import load_dotenv
 from datetime import date
-from datetime import datetime
 from discord.ext import commands
 from ParseSheet import uploadAttendance
 from ParseSheet import deleteUser
@@ -11,104 +10,12 @@ from ParseSheet import deleteUser
 
 load_dotenv()
 myTOKEN = os.getenv('TOKEN')
-OCRKey = os.getenv('OCRKEY')
+bot = commands.Bot(command_prefix='$')
 
 #myTOKEN = Discord Bot Token
 #OCRKey = register API from https://ocr.space/
 #500 calls/DAY limit
 #File Size Limit 1MB
-
-bot = commands.Bot(command_prefix='$')
-
-def ImageToAttendance(url):
-  myDict = dataProcessing(url)
-  #for key, value in myDict.items():
-  #  print(key, '->', value)
-  return myDict
-
-def nameFixer(myData):
-  # InvalidNames : CorrectNames
-  failedFamilyNames = {"Donltalia" : "DonItalia",
-                       "Shioweeb"  : "ShioWeeb"}
-  for key, value in failedFamilyNames.items():
-    if key in myData:
-      myData[value] = myData.pop(key)
-  return myData
-
-def generateFile(myData, myDate=None):
-
-  if myDate is None:
-    today = date.today()
-    myFile = "NW" + str(today.strftime("%m%d%y")) + ".txt"
-  else:
-    myFile = "NW" + str(myDate) + ".txt"
-
-  overallList = {}
-  sortedOverall = {}
-
-  if os.path.exists(myFile):
-    with open(myFile, 'r') as mainFile:
-      for line in mainFile:
-        (key, val) = line.split()
-        overallList[key] = val
-
-    overallList.update(myData)
-    mainFile.close()
-    os.remove(myFile)
-
-  else:
-    overallList = myData
-
-  for i in sorted(overallList.keys()):
-    sortedOverall[i] = overallList[i]
-
-  with open(myFile, 'w') as mainFile:
-    for i in sortedOverall.keys():
-      mainFile.write(str(i + " " + sortedOverall[i] + "\n"))
-  mainFile.close()
-
-def dataProcessing(url):
-  ocrStuff = ocrspace.API(OCRKey, ocrspace.Language.English)
-  rawData = ocrStuff.ocr_url(url).split('\r\n')
-  FamilyNameIndex = [i for i, s in enumerate(rawData) if 'Family (C' in s][0]
-  ActivityIndex = [i for i, s in enumerate(rawData) if 'Activity (?' in s][0]
-  ParticipateIndex = [i for i, s in enumerate(rawData) if 'Participate' in s][0]
-
-  myFamily = rawData[FamilyNameIndex + 1:ActivityIndex]
-  myFamilyNamesOnly = []
-
-  for i in myFamily:
-    myStr = i.split('(')[0].replace("(","")
-    myStr = myStr.rstrip()
-    myFamilyNamesOnly.append(myStr.replace(" ","_"))
-
-    myParticipation = rawData[ParticipateIndex + 1:-1]
-  
-  result = dict(zip(myFamilyNamesOnly, myParticipation))
-  result = nameFixer(result)
-  return result
-
-def filterData(myDate, option='Yes', myData=None):
-  myDict = {}
-  if myData is None:
-    myFile = "NW" + str(myDate) + '.txt'
-    if os.path.exists(myFile):
-      with open(myFile, 'r') as mainFile:
-        for line in mainFile:
-          (key, val) = line.split()
-          if val == option:
-            myDict[key] = val
-      mainFile.close()
-    else:
-      raise Exception("File does not exist.")
-
-  else:
-    for a in myData.keys():
-      if myData[a] == option:
-        myDict[a] = myData[a]
-
-  return myDict
-
 
 #################################################################################################
 #
@@ -125,8 +32,8 @@ async def on_ready():
 @commands.has_role('Officer')
 async def setAtt(ctx, url):
   try:
-      myData = ImageToAttendance(url)
-      generateFile(myData)
+      myData = OCRStuff.ImageToAttendance(url)
+      OCRStuff.generateFile(myData)
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
       await ctx.send(str(myData) + myResult)
   except Exception as e:
@@ -136,8 +43,8 @@ async def setAtt(ctx, url):
 @commands.has_role('Officer')
 async def setAttOn(ctx, date, url):
   try:
-      myData = ImageToAttendance(url)
-      generateFile(myData, date)
+      myData = OCRStuff.ImageToAttendance(url)
+      OCRStuff.generateFile(myData, date)
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
       await ctx.send(str(myData) + myResult)
   except Exception as e:
@@ -147,7 +54,7 @@ async def setAttOn(ctx, date, url):
 @commands.has_role('Officer')
 async def getYesAttOn(ctx, date):
   try:
-      myData = filterData(date)
+      myData = OCRStuff.filterData(date)
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
       await ctx.send(str(myData) + myResult)
   except Exception as e:
@@ -157,7 +64,7 @@ async def getYesAttOn(ctx, date):
 @commands.has_role('Officer')
 async def getNoAttOn(ctx, date):
   try:
-      myData = filterData(date, 'No')
+      myData = OCRStuff.filterData(date, 'No')
       myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
       await ctx.send(str(myData) + myResult)
   except Exception as e:
@@ -168,7 +75,7 @@ async def getNoAttOn(ctx, date):
 async def addYesFor(ctx, name, myDate=None):
   try:
     myDict = {name : 'Yes'}
-    generateFile(myDict, myDate)
+    OCRStuff.generateFile(myDict, myDate)
     if myDate is None:
       today = date.today()
       myDate = str(today.strftime("%m%d%y"))
@@ -181,7 +88,7 @@ async def addYesFor(ctx, name, myDate=None):
 @commands.has_role('Officer')
 async def updateSheet(ctx, date):
   try:
-      myData = filterData(date)
+      myData = OCRStuff.filterData(date)
       await ctx.send("Updating google sheet, one moment please...")
       uploadAttendance(myData, date)
       await ctx.send("update complete")
@@ -192,6 +99,12 @@ async def updateSheet(ctx, date):
 @commands.has_role('Officer')
 async def demolish(ctx, familyName, master=False):
   await ctx.send(deleteUser(familyName, master))
+
+@bot.command()
+@commands.is_owner()
+async def shutdown(ctx):
+  await ctx.send("We're closing. The Tomato Bisque is sold out for the night!")
+  await ctx.bot.logout()
 
 bot.run(myTOKEN)
 
