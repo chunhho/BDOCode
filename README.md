@@ -26,12 +26,18 @@ Commands:
 * Add to Google Sheet
   * $updateSheet Date
   * (ie. $updateSheet 010121)
+  * Prints new member names to be added to the master list
 
 * Delete From Google Sheet
   * $demolish FamilyName Master(Optional)
   * Master is if you want to remove from Master List
   * (ie. $demolish ExGuildie)
-  * (ie. $demolish ExGuildie True)
-
+  * (ie. $demolish ExGuildie True
+  
+* Get a players attendance % from Google Sheet
+  * $getPlayerAtt <username>
+  * Gets the total player attendance (all attendable nw's)
+  * $getPlayerAtt <username> <integer>
+  * Gets the player attendnace for the previous <integer> nw's
 * Query From Google Sheet
   * TODO

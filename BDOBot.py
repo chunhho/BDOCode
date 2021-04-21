@@ -6,7 +6,7 @@ from datetime import date
 from discord.ext import commands
 from ParseSheet import uploadAttendance
 from ParseSheet import deleteUser
-
+from ParseSheet import getPlayerAttPerc
 
 load_dotenv()
 myTOKEN = os.getenv('TOKEN')
@@ -99,6 +99,11 @@ async def updateSheet(ctx, date):
 @commands.has_role('Officer')
 async def demolish(ctx, familyName, master=False):
   await ctx.send(deleteUser(familyName, master))
+
+@bot.command()
+@commands.has_role('Officer')
+async def getPlayerAtt(ctx, familyName, window='All'):
+  await ctx.send(getPlayerAttPerc(familyName, window))
 
 @bot.command()
 @commands.is_owner()

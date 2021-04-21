@@ -106,3 +106,18 @@ def failedQuips(user):
              'Failed... FamilyName: **' + user + '** is not found in the BGH archive.',
              'Failed... <:feelsweirdestman:719298173083844658> FamilyName: **' + user + '** is not real.']
     return choice(quips)
+
+def getPlayerAttPerc(name, window):
+    try:
+        att_list = sheet.row_values(sheet.find(name).row)
+        if window == 'All':
+            return getPercent(att_list)
+        else:
+            window = int(window)
+            return getPercent(att_list[-window:])
+    except Exception as e:
+        return ("You either attempted to search an invalid name or didnt enter 'All' or a integer value! " + str(e))
+
+
+def getPercent(att_list):
+    return (att_list.count('Yes') / (att_list.count('Yes') + att_list.count('No'))) * 100
