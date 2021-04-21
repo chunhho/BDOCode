@@ -77,7 +77,8 @@ def uploadAttendance(attended, date):
         #This is here because of the google drive r/w quota
         if rowIdx % 20 == 0:
             print("Hit pause...")
-            time.sleep(75)
+            time.sleep(75
+    return newMember
 
 def deleteUser(user, master=False):
     try:

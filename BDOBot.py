@@ -90,8 +90,12 @@ async def updateSheet(ctx, date):
   try:
       myData = OCRStuff.filterData(date)
       await ctx.send("Updating google sheet, one moment please...")
-      uploadAttendance(myData, date)
+      addToMasterNames = uploadAttendance(myData, date)
       await ctx.send("update complete")
+      if len(addToMasterNames) > 0:
+        await ctx.send("ATTENTION NEED TO ADD THESE MEMBERS TO THE MASTER LIST")
+        for name in addToMasterNames:
+            await ctx.send(name)
   except Exception as e:
       await ctx.send("Failed, try again. Exception: " + str(e))
 
