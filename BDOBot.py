@@ -162,6 +162,46 @@ async def shutdown(ctx):
   await asyncio.sleep(5)
   await ctx.bot.logout()
 
+@bot.command()
+async def getGearBotMsgFriday(ctx):
+
+  # Process: Call getGearBotMsgFriday in #attendance-bot
+  # Bisque Bot sends message (!list) to #attendance-friday
+  # Gear Bot replies with guildies' info
+  # Bisque Bot captures replies
+  # Bisque Bot sends message (!list not attending)
+  # Gear Bot replies with guildies' info
+  # Bisque Bot captures replies
+  # Bisque Bot process and post results
+
+  chnFriday = discord.utils.get(ctx.guild.channels, name="attendance-friday")
+  botChannel = discord.utils.get(ctx.guild.channels, name="attendance-bot")
+  result = None
+
+  await chnFriday.send("!list")
+  def check(m):
+      return m.channel == chnFriday and m.author.id == 216126789406162945
+
+  try:
+    result = await bot.wait_for('message', check=check, timeout=5.0)
+  except asyncio.TimeoutError:
+    return await chnFriday.send("TimeoutError: took too long")
+
+  if result is not None:
+    await botChannel.send(result.content)
+
+  await chnFriday.send("!list not attending")
+
+  try:
+    result = await bot.wait_for('message', check=check, timeout=5.0)
+  except asyncio.TimeoutError:
+    return await chnFriday.send("TimeoutError: took too long")
+
+  if result is not None:
+    await botChannel.send(result.content)
+
+
+
 bot.run(myTOKEN)
 
 #Attendance = 'https://cdn.discordapp.com/attachments/411788991353061389/830276999066288188/unknown.png'
