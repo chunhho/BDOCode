@@ -31,7 +31,7 @@ deleteTime = 60.0
 
 @bot.event
 async def on_ready():
-  await ctx.send('The Tomato Bisque is ready!', delete_after=deleteTime)
+  print('The Tomato Bisque is ready!')
 
 @bot.command()
 @commands.has_role('Officer')
@@ -143,15 +143,16 @@ async def getMissing(ctx):
   await ctx.message.delete()
   await ctx.send(myStr, delete_after=deleteTime)
 
-    # with open('Guildies.txt', 'w', encoding="utf-8") as mainFile:
-    #   for member in role.members:
-    #     mainFile.write(member.display_name + "\n")
-    #   mainFile.close()
+@bot.command()
+@commands.has_role('Officer')
+async def updateGuildFile(ctx):
+  role = discord.utils.get(ctx.guild.roles,name="Guild Member")
+  with open('Guildies.txt', 'w', encoding="utf-8") as mainFile:
+    for member in role.members:
+      mainFile.write(member.display_name + "\n")
+    mainFile.close()
 
-    #await ctx.send(role.members)
-
-
-  #await ctx.send(guildies)
+  await ctx.send("Guild List File updated.", delete_after=deleteTime)
 
 @bot.command()
 @commands.is_owner()

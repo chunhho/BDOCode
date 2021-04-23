@@ -18,6 +18,9 @@ Commands:
   * $getNoAttOn MMDDYY 
   * (ie. $getNoAttOn 010121)
 
+* Update Guild File (Looks for 'Guild Member' Role and put their info into file)
+  * $updateGuildFile
+
 * Get Missing Responding People:
   * $getMissing
 
@@ -41,6 +44,6 @@ Commands:
   * $getPlayerAtt <username>
   * Gets the total player attendance (all attendable nw's)
   * $getPlayerAtt <username> <integer>
-  * Gets the player attendnace for the previous <integer> nw's
+  * Gets the player attendance for the previous <integer> nw's
 * Query From Google Sheet
   * TODO
