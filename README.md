@@ -18,6 +18,9 @@ Commands:
   * $getNoAttOn MMDDYY 
   * (ie. $getNoAttOn 010121)
 
+* Get Missing Responding People:
+  * $getMissing
+
 * Add Person
   * $addYesFor FamilyName Date(Optional)
   * (ie. $addYesFor TomatoBisque) FOR TODAY
