@@ -22,7 +22,9 @@ Commands:
   * $updateGuildFile
 
 * Get Missing Responding People:
-  * $getMissing
+  * $getMon
+  * $getWed
+  * $getFri
 
 * Add Person
   * $addYesFor FamilyName Date(Optional)
