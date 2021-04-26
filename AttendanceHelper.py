@@ -10,24 +10,24 @@ def processGearBotData(rawData):
   return list(set(processedData))
 
 
-def getMissingNames(guildList=None, attendanceList=None):
+def trimList(guildList=None, namesToDelete=None):
   if guildList is None:
     guildFile = open('Guildies.txt', 'r', encoding="utf-8")
     guildList = guildFile.readlines()
     guildFile.close()
 
-  if attendanceList is None:
+  if namesToDelete is None:
     respondFile = "responder.txt"
-    attendanceList = []
+    namesToDelete = []
     if os.path.exists(respondFile):
     	with open(respondFile, 'r', encoding="utf-8") as f:
     		for line in f:
     			name = line.split('>')
-    			attendanceList.append(name[2].strip())
+    			namesToDelete.append(name[2].strip())
     		f.close()
   
-  # Iterate through the list of people who responded
-  for i in attendanceList:
+  # Iterate through the list of people who responded/or ignored
+  for i in namesToDelete:
   	# Iterate through the guild list
   	for j in guildList:
   		# if a part of name from the respond List exist in guildList

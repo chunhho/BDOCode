@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from datetime import date
 from discord.ext import commands
-from AttendanceHelper import getMissingNames
+from AttendanceHelper import trimList
 from AttendanceHelper import processGearBotData
 from ParseSheet import uploadAttendance
 from ParseSheet import deleteUser
@@ -100,7 +100,7 @@ async def getNoAttOn(ctx, date):
 
 @bot.command()
 @commands.has_role('Officer')
-async def addYesFor(ctx, name, myDate=None):
+async def setYesFor(ctx, name, myDate=None):
   try:
     myDict = {name : 'Yes'}
     OCRStuff.generateFile(myDict, myDate)
@@ -166,6 +166,13 @@ async def updateGuildFile(ctx):
 
 @bot.command()
 @commands.has_role('Officer')
+async def getRole(ctx, roleName):
+  role = discord.utils.get(ctx.guild.roles,name=roleName)
+  roleList = [member.display_name for member in role.members]
+  return roleList
+
+@bot.command()
+@commands.has_role('Officer')
 async def getMissing(ctx, channel):
 
   # Process: Call getGearBotMsgFriday in #attendance-bot
@@ -182,9 +189,20 @@ async def getMissing(ctx, channel):
   # Set #attendance-bot to botChannel
   botChannel = discord.utils.get(ctx.guild.channels, name="attendance-bot")
 
-  # Get list of Discord Users with the role Guild Member
-  role = discord.utils.get(ctx.guild.roles,name="Guild Member")
-  guildList = [member.display_name for member in role.members]
+  # Get list of Discord Users with the role Guild Member/Leader
+  guildList = await getRole(ctx, "Guild Member")
+  guildList += await getRole(ctx, "Guild Leader")
+
+  # Remove duplicates Users
+  guildList = list(set(guildList))
+
+  # Missing 2 People from discord: IrregularSlayer/Luphorian
+  guildSize = len(guildList)
+
+  # Add people that may come back? :kekW:
+  # Some of these people should just be kicked tbh.
+  ignoreList = await getRole(ctx, "Vacation")
+  guildList = sorted(trimList(guildList,ignoreList))
 
   await botChannel.send("Attempting to get " + channel + "'s attendance.", delete_after=deleteTime/3)
 
@@ -205,18 +223,15 @@ async def getMissing(ctx, channel):
       [gearBotData.append(x) for x in embeddedmsg.to_dict()['description'].splitlines() if x not in gearBotData]
 
   if len(gearBotData) > 0: 
-    await botChannel.send("Data received... Processing names.", delete_after=deleteTime)
+    await botChannel.send("Data received... Processing names.", delete_after=deleteTime/3)
 
+  # Get Family Names from the !list and !list not attending
   results = processGearBotData(gearBotData)
+  resultMsg = "There are **" + str(len(results)) + "** responders and **" + str(len(ignoreList)) + "** vacation members."
+  await botChannel.send(resultMsg, delete_after=deleteTime/3)
 
-  await botChannel.send("There are " + str(len(results)) + " responders.", delete_after=deleteTime/3)
+  missingNames = sorted(trimList(guildList,results))
 
-  missingNames = sorted(getMissingNames(guildList,results))
-  # Extra Wookie Account
-  # No Dutchy (cuz he isn't @Guild Member)
-  # Missing 2 People from discord: IrregularSlayer/Luphorian
-  # This makes role.members = Actual - 2.
-  #await botChannel.send("There are **" + str(len(role.members) - len(missingNames)) + "** guild members that responded.", delete_after=deleteTime)
   myStr = "```\nMissing People for " + channel + ":\n"
   myStr += ", ".join([str(name) for name in missingNames])
   myStr += "\nMissing Total Count: " + str(len(missingNames)) + "```"
@@ -245,6 +260,18 @@ async def getFri(ctx):
   await ctx.message.delete()
 
 @bot.command()
+@commands.has_role('Officer')
+async def getVacation(ctx):
+  #ignoreRole = discord.utils.get(ctx.guild.roles,name="Vacation")
+  ignoreList = await getRole(ctx, "Vacation")
+  myStr = "```\nDead, I mean on Vacation People:\n"
+  myStr += ", ".join([str(name) for name in ignoreList])
+  myStr += "\nDead, I mean on Vacation Count: " + str(len(ignoreList)) + "```"
+  await ctx.send(myStr, delete_after=deleteTime)
+  await asyncio.sleep(3.0)
+  await ctx.message.delete()
+
+@bot.command()
 @commands.is_owner()
 async def shutdown(ctx):
   await asyncio.sleep(3.0)
@@ -253,24 +280,24 @@ async def shutdown(ctx):
   await asyncio.sleep(5)
   await ctx.bot.logout()
 
-
 @bot.command()
 async def help(ctx):
   embed=discord.Embed(title="Bisque Bot Help", description="List of commands for all your needs!")
   embed.add_field(name="$setAtt Url", value="(Ex. $setAtt http://picture4Attendance.com)", inline=False)
   embed.add_field(name="$setAttOn Date Url", value="(Ex. $setAttOn 042021 http://picture4Attendance.com)", inline=False)
+  embed.add_field(name="$setYesFor FamilyName", value="(Ex. $setYesFor TomatoBisque)", inline=False)
+  embed.add_field(name="$setYesFor FamilyName Date", value="(Ex. $setYesFor TomatoBisque 042021)", inline=False)
+  embed.add_field(name="$updateSheet Date", value="(Ex. $updateSheet 042021)", inline=False)
   embed.add_field(name="$getYesAttOn MMDDYY", value="(Ex. $getYesAttOn 042021)", inline=False)
   embed.add_field(name="$getNoAttOn MMDDYY", value="(Ex. $getNoAttOn 042021)", inline=False)
-  embed.add_field(name="$getMon", value="N/A", inline=False)
-  embed.add_field(name="$getWed", value="N/A", inline=False)
-  embed.add_field(name="$getFri", value="N/A", inline=False)
-  embed.add_field(name="$addYesFor FamilyName", value="(Ex. $addYesFor TomatoBisque)", inline=False)
-  embed.add_field(name="$addYesFor FamilyName Date", value="(Ex. $addYesFor TomatoBisque 042021)", inline=False)
-  embed.add_field(name="$updateSheet Date", value="(Ex. $updateSheet 042021)", inline=False)
-  embed.add_field(name="$demolish FamilyName ", value="(Ex. $demolish TomatoBisque)", inline=False)
-  embed.add_field(name="$demolish FamilyName Master ", value="(Ex. $demolish TomatoBisque True)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName", value="(Ex. $getPlayerAtt TomatoBisque)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName Count", value="(Ex. $getPlayerAtt TomatoBisque 3)", inline=False)
+  embed.add_field(name="$getMon", value="Returns list of Missing People for Monday", inline=False)
+  embed.add_field(name="$getWed", value="Returns list of Missing People for Wednesday", inline=False)
+  embed.add_field(name="$getFri", value="Returns list of Missing People for Friday", inline=False)
+  embed.add_field(name="$getVacation", value="Returns list of People with Vacation Role", inline=False)
+  embed.add_field(name="$demolish FamilyName ", value="(Ex. $demolish TomatoBisque)", inline=False)
+  embed.add_field(name="$demolish FamilyName Master ", value="(Ex. $demolish TomatoBisque True)", inline=False)
   await ctx.send(embed=embed,delete_after=deleteTime*3)
   await ctx.message.delete()
 

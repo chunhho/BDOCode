@@ -27,9 +27,9 @@ Commands:
   * $getFri
 
 * Add Person
-  * $addYesFor FamilyName Date(Optional)
-  * (ie. $addYesFor TomatoBisque) FOR TODAY
-  * (ie. $addYesFor TomatoBisque 010121) FOR SPECIFC DATE 
+  * $setYesFor FamilyName Date(Optional)
+  * (ie. $setYesFor TomatoBisque) FOR TODAY
+  * (ie. $setYesFor TomatoBisque 010121) FOR SPECIFC DATE 
 
 * Add to Google Sheet
   * $updateSheet Date
