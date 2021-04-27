@@ -21,6 +21,14 @@ Commands:
 * Update Guild File (Looks for 'Guild Member' Role and put their info into file)
   * $updateGuildFile
 
+* Set Attending Role to People:
+  * $setMon
+  * $setWed
+  * $setFri
+
+* Clear Attending Role from People:
+  * $clearAtt
+
 * Get Missing Responding People:
   * $getMon
   * $getWed

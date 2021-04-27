@@ -272,6 +272,92 @@ async def getVacation(ctx):
   await ctx.message.delete()
 
 @bot.command()
+@commands.has_role('Officer')
+async def getAttending(ctx, channel):
+
+  guildMem = discord.utils.get(ctx.guild.roles,name="Guild Member")
+  guildLeader = discord.utils.get(ctx.guild.roles,name="Guild Leader")
+  guildList = [member for member in guildMem.members]
+  guildList += [member for member in guildLeader.members]
+  guildList = list(set(guildList))
+
+  #Get List of People that Yes up
+  attChn = discord.utils.get(ctx.guild.channels, name=channel)
+  await attChn.send("!list")
+  botMsgs = await attChn.history(limit=4).flatten()
+
+  gearBotData = []
+  for msg in botMsgs:
+    for embeddedmsg in msg.embeds:
+      [gearBotData.append(x) for x in embeddedmsg.to_dict()['description'].splitlines() if x not in gearBotData]
+
+  famNames = processGearBotData(gearBotData)
+
+  attending = discord.utils.get(ctx.guild.roles, name="Attending")
+  attendingList = []
+  # Not sure how to deal with bullshit same names for now
+  for name in famNames:
+    for member in guildList:
+      if name in member.display_name:
+        await member.add_roles(attending)
+        attendingList.append(member.display_name)
+  return attendingList
+
+@bot.command()
+@commands.has_role('Officer')
+async def setMon(ctx):
+  roleList = await getAttending(ctx, "attendance-monday")
+  roleList.sort()
+  myStr = "```\nAdded the following list of people with the role Attending:\n"
+  myStr += ", ".join([str(name) for name in roleList])
+  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
+  await ctx.send(myStr, delete_after=deleteTime)
+  await asyncio.sleep(3.0)
+  await ctx.message.delete()
+
+@bot.command()
+@commands.has_role('Officer')
+async def setWed(ctx):
+  roleList = await getAttending(ctx, "attendance-wednesday")
+  roleList.sort()
+  myStr = "```\nAdded the following list of people with the role Attending:\n"
+  myStr += ", ".join([str(name) for name in roleList])
+  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
+  await ctx.send(myStr, delete_after=deleteTime)
+  await asyncio.sleep(3.0)
+  await ctx.message.delete()
+
+
+@bot.command()
+@commands.has_role('Officer')
+async def setFri(ctx):
+  roleList = await getAttending(ctx, "attendance-friday")
+  roleList.sort()
+  myStr = "```\nAdded the following list of people with the role Attending:\n"
+  myStr += ", ".join([str(name) for name in roleList])
+  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
+  await ctx.send(myStr, delete_after=deleteTime)
+  await asyncio.sleep(3.0)
+  await ctx.message.delete()
+
+@bot.command()
+@commands.has_role('Officer')
+async def clearAtt(ctx):
+  attendingRole = discord.utils.get(ctx.guild.roles,name="Attending")
+  guildList = await getRole(ctx, "Attending")
+  roleList = []
+  for member in attendingRole.members:
+    await member.remove_roles(attendingRole)
+    roleList.append(member.display_name)
+  roleList.sort()
+  myStr = "```\nRemoved the following list of people with the role Attending:\n"
+  myStr += ", ".join([str(name) for name in roleList])
+  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
+  await ctx.send(myStr, delete_after=deleteTime)
+  await asyncio.sleep(3.0)
+  await ctx.message.delete()
+
+@bot.command()
 @commands.is_owner()
 async def shutdown(ctx):
   await asyncio.sleep(3.0)
@@ -292,6 +378,10 @@ async def help(ctx):
   embed.add_field(name="$getNoAttOn MMDDYY", value="(Ex. $getNoAttOn 042021)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName", value="(Ex. $getPlayerAtt TomatoBisque)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName Count", value="(Ex. $getPlayerAtt TomatoBisque 3)", inline=False)
+  embed.add_field(name="$setMon", value="Add attending role for Monday's attendees", inline=False)
+  embed.add_field(name="$setWed", value="Add attending role for Wednesday's attendees", inline=False)
+  embed.add_field(name="$setFri", value="Add attending role for Friday's attendees", inline=False)
+  embed.add_field(name="$clearAtt", value="Remove attending role from everyone who has it", inline=False)
   embed.add_field(name="$getMon", value="Returns list of Missing People for Monday", inline=False)
   embed.add_field(name="$getWed", value="Returns list of Missing People for Wednesday", inline=False)
   embed.add_field(name="$getFri", value="Returns list of Missing People for Friday", inline=False)
