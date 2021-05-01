@@ -30,8 +30,39 @@ def trimList(guildList=None, namesToDelete=None):
   for i in namesToDelete:
   	# Iterate through the guild list
   	for j in guildList:
-  		# if a part of name from the respond List exist in guildList
-  		if i in j:
+  		# if a part of name from the respond List exist in guildList       
+  		if i.lower() in j.lower():
   			guildList.remove(j)
 
   return guildList
+
+def findDiscordName(guildList, discordName):
+  #guildList = in-game family names
+  myDict = {}
+  myFam = []
+  myDis = []
+  found = False
+  for a in guildList:
+    for b in discordName:
+      if (a.lower().strip() in b.lower().strip()) or (b.lower().strip() in a.lower().strip()):
+        if b == "fro" and len(a) > 6:
+          continue
+        else:
+          found = True
+          myDict[a] = b
+          break
+      elif a == 'BavoI':
+        myDict[a] = 'Bavol'
+
+      elif a == 'Lieng':
+        myDict[a] = '˥ᴉǝuƃ'
+
+      elif a == 'Waffle':
+        myDict[a] = 'ᗆጠ⊣'
+
+    if found == False:
+      myFam.append(a)
+      myDis.append(b)
+    else:
+      found = False
+  return myDict, myFam, myDis

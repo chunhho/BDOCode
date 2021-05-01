@@ -8,6 +8,7 @@ from datetime import date
 from discord.ext import commands
 from AttendanceHelper import trimList
 from AttendanceHelper import processGearBotData
+from AttendanceHelper import findDiscordName
 from ParseSheet import uploadAttendance
 from ParseSheet import deleteUser
 from ParseSheet import getPlayerAttPerc
@@ -356,6 +357,76 @@ async def clearAtt(ctx):
   await ctx.send(myStr, delete_after=deleteTime)
   await asyncio.sleep(3.0)
   await ctx.message.delete()
+
+@bot.command()
+@commands.has_role('Officer')
+async def getMissingCanute(ctx):
+  myMemList = await getRole(ctx, "Guild Member")
+  mainFile = open('FamilyNamesWebsite.txt', 'r', encoding="utf-8")
+  guildFile = open('canuteNames.txt', 'r', encoding="utf-8")
+  guildList = mainFile.readlines()
+  canuteList = guildFile.readlines()
+  guildFile.close()
+  mainFile.close()
+
+  myDict, myFam, myDis = findDiscordName(guildList, myMemList)
+
+  # Result A = List of Family names(with relevant Discord Name) missing from Canute
+  resultA = trimList(list(myDict.keys()), canuteList)
+
+  # Result B = List of Family names(without relevant Discord Name) missing from Canute
+  resultB = trimList(myFam, canuteList)
+
+  resultADict = {}
+
+  for famNames in resultA:
+    resultADict[famNames] = myDict[famNames] 
+  
+  sorted(resultADict)
+  sorted(resultB)
+
+  myStr = "```\nMissing Canute Names for findable Discord Names:\n"
+  myStr += "\n".join(['FN:{0} DN:{1}'.format(k, v) for k,v in resultADict.items()])
+  myStr += "\nMissing Count: " + str(len(resultADict)) + "```"
+
+  await ctx.send(myStr)
+
+  myStr = "```\nMissing Canute Names for not findable/difficult Discord Names:\n"
+  myStr += "".join([str(name) for name in resultB])
+  myStr += "\nMissing Count: " + str(len(resultB)) + "```"
+  await ctx.send(myStr)
+
+
+@bot.command
+@commands.is_owner()
+async def spamPeople(ctx):
+  myMemList = await getRole(ctx, "Guild Member")
+  mainFile = open('FamilyNamesWebsite.txt', 'r', encoding="utf-8")
+  guildFile = open('canuteNames.txt', 'r', encoding="utf-8")
+  guildList = mainFile.readlines()
+  canuteList = guildFile.readlines()
+  guildFile.close()
+  mainFile.close()
+
+  myDict, myFam, myDis = findDiscordName(guildList, myMemList)
+
+  # Result A = List of Family names(with relevant Discord Name) missing from Canute
+  resultA = trimList(list(myDict.keys()), canuteList)
+  resultADict = {}
+
+  for famNames in resultA:
+    resultADict[famNames] = myDict[famNames] 
+  sorted(resultADict)
+
+  guildMem = discord.utils.get(ctx.guild.roles,name="Guild Member")
+  attChn = discord.utils.get(ctx.guild.channels, name="canute-gear")
+  spamChn = discord.utils.get(ctx.guild.channels, name="majorbotspam")
+
+  guildList = [member for member in guildMem.members]
+  for person in guildMem.members:
+    for name in resultADict.values():
+      if person.display_name == name:
+        await spamChn.send(f"User {person.mention} is required to update your info in {attChn.mention}.")
 
 @bot.command()
 @commands.is_owner()
