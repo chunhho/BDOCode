@@ -141,7 +141,7 @@ async def updateSheet(ctx, date):
 @bot.command()
 @commands.has_role('Officer')
 async def demolish(ctx, familyName, master=False):
-  await ctx.send(deleteUser(familyName, master), delete_after=deleteTime)
+  await ctx.send(deleteUser(familyName, master))
   await asyncio.sleep(3.0)
   await ctx.message.delete()
 
@@ -343,20 +343,24 @@ async def setFri(ctx):
 
 @bot.command()
 @commands.has_role('Officer')
-async def clearAtt(ctx):
-  attendingRole = discord.utils.get(ctx.guild.roles,name="Attending")
-  guildList = await getRole(ctx, "Attending")
+async def clearRole(ctx, roleName):
+  theRole = discord.utils.get(ctx.guild.roles,name=roleName)
+  guildList = await getRole(ctx, roleName)
   roleList = []
-  for member in attendingRole.members:
-    await member.remove_roles(attendingRole)
+  for member in theRole.members:
+    await member.remove_roles(theRole)
     roleList.append(member.display_name)
   roleList.sort()
-  myStr = "```\nRemoved the following list of people with the role Attending:\n"
+  myStr = "```\nRemoved the following list of people with the role " + roleName + ":\n"
   myStr += ", ".join([str(name) for name in roleList])
-  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
+  myStr += "\nCount: " + str(len(roleList)) + "```"
   await ctx.send(myStr, delete_after=deleteTime)
   await asyncio.sleep(3.0)
-  await ctx.message.delete()
+
+@bot.command()
+@commands.has_role('Officer')
+async def clearAtt(ctx):
+  await clearRole(ctx, "Attending")
 
 @bot.command()
 @commands.has_role('Officer')
@@ -397,6 +401,73 @@ async def getMissingCanute(ctx):
   await ctx.send(myStr)
 
 
+@bot.command()
+@commands.has_role('Officer')
+async def setDeadBeat(ctx):
+  myMemList = await getRole(ctx, "Guild Member")
+  famNamesFile = open('FamilyNamesWebsite.txt', 'r', encoding="utf-8")
+  guildList = famNamesFile.readlines()
+
+  canuteFile = open('canuteNames.txt', 'r', encoding="utf-8")
+  canuteList = canuteFile.readlines()
+
+  famNamesFile.close()
+  canuteFile.close()
+
+  myDict, myFam, myDis = findDiscordName(guildList, myMemList)
+
+  # Result A = List of Family names(with relevant Discord Name) missing from Canute
+  resultA = trimList(list(myDict.keys()), canuteList)
+  resultADict = {}
+  # Result B = List of Family names(without relevant Discord Name) missing from Canute
+  resultB = trimList(myFam, canuteList)
+  sorted(resultB)
+
+  for famNames in resultA:
+    resultADict[famNames] = myDict[famNames] 
+  sorted(resultADict)
+
+  guildMem = discord.utils.get(ctx.guild.roles,name="Guild Member")
+  deadBeatMembers = discord.utils.get(ctx.guild.roles, name="NonResponder")
+  vacationRole = discord.utils.get(ctx.guild.roles,name="Vacation")
+
+  listOfDeadBeats = []
+
+  for person in guildMem.members:
+    for name in resultADict.values():
+      if person.display_name == name and vacationRole not in person.roles:
+        await person.add_roles(deadBeatMembers)
+        listOfDeadBeats.append(person.display_name)
+  sorted(listOfDeadBeats)
+  
+  myStr = "```\nGuild Members that can't XXXXing type a bot command:\n"
+  #myStr += "\n".join(['FN:{0} DN:{1}'.format(k, v) for k,v in resultADict.items()])
+  myStr += "\n".join([name for name in listOfDeadBeats])
+  myStr += "\nCount: " + str(len(listOfDeadBeats)) + "```"
+  await ctx.send(myStr)
+
+  myStr = "```\nMissing Canute Names for not findable/difficult Discord Names:\n"
+  myStr += "".join([str(name) for name in resultB])
+  myStr += "\nCount: " + str(len(resultB)) + "```"
+  await ctx.send(myStr)
+
+@bot.command()
+@commands.has_role('Officer')
+async def resetDeadBeat(ctx):
+  await clearRole(ctx, "NonResponder")
+  await setDeadBeat(ctx)
+
+@bot.command()
+@commands.has_role('Officer')
+async def listDeadBeat(ctx):
+  guildList = await getRole(ctx, "NonResponder")
+  guildList.sort()
+  myStr = "```\nGuild Members that can't XXXXing type a bot command:\n"
+  #myStr += "\n".join(['FN:{0} DN:{1}'.format(k, v) for k,v in resultADict.items()])
+  myStr += "\n".join([name for name in guildList])
+  myStr += "\nCount: " + str(len(guildList)) + "```"
+  await ctx.send(myStr)
+
 @bot.command
 @commands.is_owner()
 async def spamPeople(ctx):
@@ -422,7 +493,6 @@ async def spamPeople(ctx):
   attChn = discord.utils.get(ctx.guild.channels, name="canute-gear")
   spamChn = discord.utils.get(ctx.guild.channels, name="majorbotspam")
 
-  guildList = [member for member in guildMem.members]
   for person in guildMem.members:
     for name in resultADict.values():
       if person.display_name == name:
@@ -462,6 +532,7 @@ async def help(ctx):
   await ctx.send(embed=embed,delete_after=deleteTime*3)
   await ctx.message.delete()
 
+
 bot.run(myTOKEN)
 
 #Attendance = 'https://cdn.discordapp.com/attachments/411788991353061389/830276999066288188/unknown.png'
@@ -469,5 +540,4 @@ bot.run(myTOKEN)
 #generateFile(S)
 # myUrl = input("Enter link: ")
 # ImageToAttendance(myUrl)
-
 
