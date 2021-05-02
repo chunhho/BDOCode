@@ -174,169 +174,12 @@ async def getRole(ctx, roleName):
 
 @bot.command()
 @commands.has_role('Officer')
-async def getMissing(ctx, channel):
-
-  # Process: Call getGearBotMsgFriday in #attendance-bot
-  # Bisque Bot sends message (!list) to #attendance-friday
-  # Gear Bot replies with guildies' info
-  # Bisque Bot captures replies
-  # Bisque Bot sends message (!list not attending)
-  # Gear Bot replies with guildies' info
-  # Bisque Bot captures replies
-  # Bisque Bot process and post results
-
-  # Set #Attendance-[Day] to attChn
-  attChn = discord.utils.get(ctx.guild.channels, name=channel)
-  # Set #attendance-bot to botChannel
-  botChannel = discord.utils.get(ctx.guild.channels, name="attendance-bot")
-
-  # Get list of Discord Users with the role Guild Member/Leader
-  guildList = await getRole(ctx, "Guild Member")
-  guildList += await getRole(ctx, "Guild Leader")
-
-  # Remove duplicates Users
-  guildList = list(set(guildList))
-
-  # Missing 2 People from discord: IrregularSlayer/Luphorian
-  guildSize = len(guildList)
-
-  # Add people that may come back? :kekW:
-  # Some of these people should just be kicked tbh.
-  ignoreList = await getRole(ctx, "Vacation")
-  guildList = sorted(trimList(guildList,ignoreList))
-
-  await botChannel.send("Attempting to get " + channel + "'s attendance.", delete_after=deleteTime/3)
-
-  # Retrieve Sign-ups from the #Attendance-[Day]
-  await attChn.send("!list")
-  await asyncio.sleep(3.0)
-  await attChn.send("!list not attending")
-
-  # Wait for 5 seconds for the messages to load
-  await asyncio.sleep(5.0)
-
-  gearBotData = []
-  
-  # Get the last 8 messages
-  botMsgs = await attChn.history(limit=8).flatten()
-  for msg in botMsgs:
-    for embeddedmsg in msg.embeds:
-      [gearBotData.append(x) for x in embeddedmsg.to_dict()['description'].splitlines() if x not in gearBotData]
-
-  if len(gearBotData) > 0: 
-    await botChannel.send("Data received... Processing names.", delete_after=deleteTime/3)
-
-  # Get Family Names from the !list and !list not attending
-  results = processGearBotData(gearBotData)
-  resultMsg = "There are **" + str(len(results)) + "** responders and **" + str(len(ignoreList)) + "** vacation members."
-  await botChannel.send(resultMsg, delete_after=deleteTime/3)
-
-  missingNames = sorted(trimList(guildList,results))
-
-  myStr = "```\nMissing People for " + channel + ":\n"
-  myStr += ", ".join([str(name) for name in missingNames])
-  myStr += "\nMissing Total Count: " + str(len(missingNames)) + "```"
-
-  await botChannel.send(myStr, delete_after=deleteTime)
-
-@bot.command()
-@commands.has_role('Officer')
-async def getMon(ctx):
-  await getMissing(ctx, "attendance-monday")
-  await asyncio.sleep(3.0)
-  await ctx.message.delete()
-
-@bot.command()
-@commands.has_role('Officer')
-async def getWed(ctx):
-  await getMissing(ctx, "attendance-wednesday")
-  await asyncio.sleep(3.0)
-  await ctx.message.delete()
-
-@bot.command()
-@commands.has_role('Officer')
-async def getFri(ctx):
-  await getMissing(ctx, "attendance-friday")  
-  await asyncio.sleep(3.0)
-  await ctx.message.delete()
-
-@bot.command()
-@commands.has_role('Officer')
 async def getVacation(ctx):
   #ignoreRole = discord.utils.get(ctx.guild.roles,name="Vacation")
   ignoreList = await getRole(ctx, "Vacation")
   myStr = "```\nDead, I mean on Vacation People:\n"
   myStr += ", ".join([str(name) for name in ignoreList])
   myStr += "\nDead, I mean on Vacation Count: " + str(len(ignoreList)) + "```"
-  await ctx.send(myStr, delete_after=deleteTime)
-  await asyncio.sleep(3.0)
-  await ctx.message.delete()
-
-@bot.command()
-@commands.has_role('Officer')
-async def getAttending(ctx, channel):
-
-  guildMem = discord.utils.get(ctx.guild.roles,name="Guild Member")
-  guildLeader = discord.utils.get(ctx.guild.roles,name="Guild Leader")
-  guildList = [member for member in guildMem.members]
-  guildList += [member for member in guildLeader.members]
-  guildList = list(set(guildList))
-
-  #Get List of People that Yes up
-  attChn = discord.utils.get(ctx.guild.channels, name=channel)
-  await attChn.send("!list")
-  botMsgs = await attChn.history(limit=4).flatten()
-
-  gearBotData = []
-  for msg in botMsgs:
-    for embeddedmsg in msg.embeds:
-      [gearBotData.append(x) for x in embeddedmsg.to_dict()['description'].splitlines() if x not in gearBotData]
-
-  famNames = processGearBotData(gearBotData)
-
-  attending = discord.utils.get(ctx.guild.roles, name="Attending")
-  attendingList = []
-  # Not sure how to deal with bullshit same names for now
-  for name in famNames:
-    for member in guildList:
-      if name in member.display_name:
-        await member.add_roles(attending)
-        attendingList.append(member.display_name)
-  return attendingList
-
-@bot.command()
-@commands.has_role('Officer')
-async def setMon(ctx):
-  roleList = await getAttending(ctx, "attendance-monday")
-  roleList.sort()
-  myStr = "```\nAdded the following list of people with the role Attending:\n"
-  myStr += ", ".join([str(name) for name in roleList])
-  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
-  await ctx.send(myStr, delete_after=deleteTime)
-  await asyncio.sleep(3.0)
-  await ctx.message.delete()
-
-@bot.command()
-@commands.has_role('Officer')
-async def setWed(ctx):
-  roleList = await getAttending(ctx, "attendance-wednesday")
-  roleList.sort()
-  myStr = "```\nAdded the following list of people with the role Attending:\n"
-  myStr += ", ".join([str(name) for name in roleList])
-  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
-  await ctx.send(myStr, delete_after=deleteTime)
-  await asyncio.sleep(3.0)
-  await ctx.message.delete()
-
-
-@bot.command()
-@commands.has_role('Officer')
-async def setFri(ctx):
-  roleList = await getAttending(ctx, "attendance-friday")
-  roleList.sort()
-  myStr = "```\nAdded the following list of people with the role Attending:\n"
-  myStr += ", ".join([str(name) for name in roleList])
-  myStr += "\nAttending Count: " + str(len(roleList)) + "```"
   await ctx.send(myStr, delete_after=deleteTime)
   await asyncio.sleep(3.0)
   await ctx.message.delete()
@@ -356,11 +199,6 @@ async def clearRole(ctx, roleName):
   myStr += "\nCount: " + str(len(roleList)) + "```"
   await ctx.send(myStr, delete_after=deleteTime)
   await asyncio.sleep(3.0)
-
-@bot.command()
-@commands.has_role('Officer')
-async def clearAtt(ctx):
-  await clearRole(ctx, "Attending")
 
 @bot.command()
 @commands.has_role('Officer')
@@ -519,13 +357,6 @@ async def help(ctx):
   embed.add_field(name="$getNoAttOn MMDDYY", value="(Ex. $getNoAttOn 042021)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName", value="(Ex. $getPlayerAtt TomatoBisque)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName Count", value="(Ex. $getPlayerAtt TomatoBisque 3)", inline=False)
-  embed.add_field(name="$setMon", value="Add attending role for Monday's attendees", inline=False)
-  embed.add_field(name="$setWed", value="Add attending role for Wednesday's attendees", inline=False)
-  embed.add_field(name="$setFri", value="Add attending role for Friday's attendees", inline=False)
-  embed.add_field(name="$clearAtt", value="Remove attending role from everyone who has it", inline=False)
-  embed.add_field(name="$getMon", value="Returns list of Missing People for Monday", inline=False)
-  embed.add_field(name="$getWed", value="Returns list of Missing People for Wednesday", inline=False)
-  embed.add_field(name="$getFri", value="Returns list of Missing People for Friday", inline=False)
   embed.add_field(name="$getVacation", value="Returns list of People with Vacation Role", inline=False)
   embed.add_field(name="$demolish FamilyName ", value="(Ex. $demolish TomatoBisque)", inline=False)
   embed.add_field(name="$demolish FamilyName Master ", value="(Ex. $demolish TomatoBisque True)", inline=False)
