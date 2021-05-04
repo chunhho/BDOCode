@@ -75,14 +75,13 @@ async def getYesAttOn(ctx, date):
   try:
     myData = OCRStuff.filterData(date)
     myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
-    await ctx.send(str(myData) + myResult, delete_after=deleteTime)
+    await ctx.send(str(myData) + myResult)
 
   except Exception as e:
-    await ctx.send("Failed, try again. Exception: " + str(e), delete_after=deleteTime)
+    await ctx.send("Failed, try again. Exception: " + str(e))
 
   finally:
     await asyncio.sleep(3.0)
-    await ctx.message.delete()
 
 @bot.command()
 @commands.has_role('Officer')
