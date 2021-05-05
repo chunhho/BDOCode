@@ -12,6 +12,7 @@ from AttendanceHelper import findDiscordName
 from ParseSheet import uploadAttendance
 from ParseSheet import deleteUser
 from ParseSheet import getPlayerAttPerc
+from ParseSheet import uploadTwoWeekAtt
 
 load_dotenv()
 myTOKEN = os.getenv('TOKEN')
@@ -359,9 +360,16 @@ async def help(ctx):
   embed.add_field(name="$getVacation", value="Returns list of People with Vacation Role", inline=False)
   embed.add_field(name="$demolish FamilyName ", value="(Ex. $demolish TomatoBisque)", inline=False)
   embed.add_field(name="$demolish FamilyName Master ", value="(Ex. $demolish TomatoBisque True)", inline=False)
+  embed.add_field(name="$uploadTwoWeekAttendance ", value="Updates the Member List Attendance % for the previous 2 weeks", inline=False)
   await ctx.send(embed=embed,delete_after=deleteTime*3)
   await ctx.message.delete()
 
+@bot.command()
+@commands.has_role('Officer')
+async def uploadTwoWeekAttendance(ctx):
+  await ctx.send("Updating all players 2 week attendance, this will take a few moments...")
+  uploadTwoWeekAtt()
+  await ctx.send("List update complete!")
 
 bot.run(myTOKEN)
 

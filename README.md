@@ -57,3 +57,6 @@ Commands:
   * Gets the player attendance for the previous <integer> nw's
 * Query From Google Sheet
   * TODO
+  
+* Set Player 2 week attendance on Members List
+  * $uploadTwoWeekAttendance

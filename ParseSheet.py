@@ -122,3 +122,17 @@ def getPlayerAttPerc(name, window):
 
 def getPercent(att_list):
     return (att_list.count('Yes') / (att_list.count('Yes') + att_list.count('No'))) * 100
+
+def uploadTwoWeekAtt():
+    names = sheet.col_values(1)
+    names.pop(0)
+    window = 6
+    updateCol = 12
+    googleIOPause = 0
+    for name in names:
+        playerPerc = getPlayerAttPerc(name, window)
+        masterSheet.update_cell(masterSheet.find(name).row, updateCol, "{:.2f}".format(playerPerc))
+        googleIOPause+= 1
+        if googleIOPause % 15 == 0:
+            print("Hit pause...")
+            time.sleep(75)
