@@ -15,7 +15,7 @@ client = gspread.authorize(creds)
 
 #Access sheet
 sheet = client.open("BGH Members List").worksheet("Attendance")
-masterSheet = client.open("BGH Members List").sheet1
+masterSheet = client.open("BGH Members List").worksheet("Members List")
 
 def findColIdx(date):
     """

@@ -13,10 +13,10 @@ Commands:
   * (ie. $setAttOn 010121 https://cdn.discordapp.com/attachments/411788991353061389/827714272887832606/unknown.png)
 
 * Get Attendance
-  * $getYesAttOn:MMDDYY
-  * (ie. $getYesAttOn 010121)
-  * $getNoAttOn MMDDYY 
-  * (ie. $getNoAttOn 010121)
+  * $getYesOn:MMDDYY
+  * (ie. $getYesOn 010121)
+  * $getNoOn MMDDYY 
+  * (ie. $getNoOn 010121)
 
 * Update Guild File (Looks for 'Guild Member' Role and put their info into file)
   * $updateGuildFile
@@ -37,7 +37,9 @@ Commands:
 * Add Person
   * $setYesFor FamilyName Date(Optional)
   * (ie. $setYesFor TomatoBisque) FOR TODAY
-  * (ie. $setYesFor TomatoBisque 010121) FOR SPECIFC DATE 
+  * (ie. $setYesFor TomatoBisque 010121) FOR SPECIFC DATE
+  * $setYesListForDate Date Name1 Name2 Name3 ...
+  * (ie. $setYesListForDate 010101 Alpha Beta Charlie Delta)
 
 * Add to Google Sheet
   * $updateSheet Date

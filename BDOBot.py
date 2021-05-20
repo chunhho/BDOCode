@@ -72,7 +72,7 @@ async def setAttOn(ctx, date, url):
 
 @bot.command()
 @commands.has_role('Officer')
-async def getYesAttOn(ctx, date):
+async def getYesOn(ctx, date):
   try:
     myData = OCRStuff.filterData(date)
     myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
@@ -86,7 +86,7 @@ async def getYesAttOn(ctx, date):
 
 @bot.command()
 @commands.has_role('Officer')
-async def getNoAttOn(ctx, date):
+async def getNoOn(ctx, date):
   try:
     myData = OCRStuff.filterData(date, 'No')
     myResult = "\nTotal count from this screenshot is: **" + str(len(myData)) + "**."
@@ -109,6 +109,26 @@ async def setYesFor(ctx, name, myDate=None):
       today = date.today()
       myDate = str(today.strftime("%m%d%y"))
     myStr = name + " has been added for " + myDate + "."
+    await ctx.send(myStr, delete_after=deleteTime)
+
+  except Exception as e:
+    await ctx.send("Failed, try again. Exception: " + str(e), delete_after=deleteTime)
+
+  finally:
+    await asyncio.sleep(3.0)
+    await ctx.message.delete()
+
+@bot.command()
+@commands.has_role('Officer')
+async def setYesListForDate(ctx, myDate, *names):
+  myDict = {}
+  myStr = "" 
+  try:
+    for name in names:
+      myDict[name] = "Yes"
+      myStr += name + " "
+    OCRStuff.generateFile(myDict, myDate)
+    myStr += "have been added for " + myDate + "."
     await ctx.send(myStr, delete_after=deleteTime)
 
   except Exception as e:
@@ -352,9 +372,10 @@ async def help(ctx):
   embed.add_field(name="$setAttOn Date Url", value="(Ex. $setAttOn 042021 http://picture4Attendance.com)", inline=False)
   embed.add_field(name="$setYesFor FamilyName", value="(Ex. $setYesFor TomatoBisque)", inline=False)
   embed.add_field(name="$setYesFor FamilyName Date", value="(Ex. $setYesFor TomatoBisque 042021)", inline=False)
+  embed.add_field(name="$setYesListForDate Date Name1 Name2 Name3 ...", value="(Ex. $setYesListForDate 010101 Alpha Beta Charlie Delta)", inline=False)
   embed.add_field(name="$updateSheet Date", value="(Ex. $updateSheet 042021)", inline=False)
-  embed.add_field(name="$getYesAttOn MMDDYY", value="(Ex. $getYesAttOn 042021)", inline=False)
-  embed.add_field(name="$getNoAttOn MMDDYY", value="(Ex. $getNoAttOn 042021)", inline=False)
+  embed.add_field(name="$getYesOn MMDDYY", value="(Ex. $getYesOn 042021)", inline=False)
+  embed.add_field(name="$getNoOn MMDDYY", value="(Ex. $getNoOn 042021)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName", value="(Ex. $getPlayerAtt TomatoBisque)", inline=False)
   embed.add_field(name="$getPlayerAtt FamilyName Count", value="(Ex. $getPlayerAtt TomatoBisque 3)", inline=False)
   embed.add_field(name="$getVacation", value="Returns list of People with Vacation Role", inline=False)
