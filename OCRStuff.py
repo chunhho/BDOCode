@@ -13,6 +13,15 @@ def ImageToAttendance(url):
   #  print(key, '->', value)
   return myDict
 
+def pathSeeker(fileName):
+  archivePath = "oldNW/" + fileName
+  if os.path.exists(fileName):
+    return fileName
+  elif os.path.exists(archivePath):
+    return archivePath
+  else:
+    return None
+  
 def nameFixer(myData):
   # InvalidNames : CorrectNames
   failedFamilyNames = {"Donltalia" : "DonItalia",
@@ -80,8 +89,9 @@ def filterData(myDate, option='Yes', myData=None):
   myDict = {}
   if myData is None:
     myFile = "NW" + str(myDate) + '.txt'
-    if os.path.exists(myFile):
-      with open(myFile, 'r') as mainFile:
+    myFileLoc = pathSeeker(myFile)
+    if myFileLoc is not None:
+      with open(myFileLoc, 'r') as mainFile:
         for line in mainFile:
           (key, val) = line.split()
           if val == option:
