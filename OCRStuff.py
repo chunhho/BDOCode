@@ -16,7 +16,8 @@ def ImageToAttendance(url):
 def nameFixer(myData):
   # InvalidNames : CorrectNames
   failedFamilyNames = {"Donltalia" : "DonItalia",
-                       "Shioweeb"  : "ShioWeeb"}
+                       "Shioweeb"  : "ShioWeeb",
+                       "Pottl" : "Pott1"}
   for key, value in failedFamilyNames.items():
     if key in myData:
       myData[value] = myData.pop(key)
