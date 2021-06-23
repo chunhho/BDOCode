@@ -62,12 +62,14 @@ def uploadAttendance(attended, date):
     #Create a set of column values for new sheet members
     exemptBuffer = ['Exempt' for i in range(colIdx - 2)]
     exemptBuffer.append('Yes')
+    exemptBuffer.insert(0, " ")
     #Set attendance for members
     rowIdx = 2
     for name in allNames:
         if name in newMember:
             newRow = [name] + exemptBuffer
             sheet.insert_row(newRow, rowIdx)
+            sheet.update_cell(rowIdx, 2, '=COUNTIF(Attendance!C42:42, "Yes") + COUNTIF(Attendance!C42:42, "Exempt")')
         elif name in attendedNames:
             sheet.update_cell(rowIdx, colIdx, 'Yes')
             attendedNames.pop(attendedNames.index(name))
