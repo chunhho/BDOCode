@@ -4,6 +4,7 @@ import time
 from random import choice
 from datetime import datetime
 
+
 """
 Link to YT guide for Setup: https://www.youtube.com/watch?v=cnPlKLEGR7E&ab_channel=TechWithTim
 """
@@ -59,17 +60,14 @@ def uploadAttendance(attended, date):
     sheet.update_cell(1, colIdx, myDate)
     #Populate required lists
     attendedNames, allNames, newMember = generateLists(attended)
-    #Create a set of column values for new sheet members
-    exemptBuffer = ['Exempt' for i in range(colIdx - 2)]
-    exemptBuffer.append('Yes')
-    exemptBuffer.insert(0, " ")
     #Set attendance for members
     rowIdx = 2
     for name in allNames:
         if name in newMember:
-            newRow = [name] + exemptBuffer
+            newRow = [name]
             sheet.insert_row(newRow, rowIdx)
-            sheet.update_cell(rowIdx, 2, '=COUNTIF(Attendance!C42:42, "Yes") + COUNTIF(Attendance!C42:42, "Exempt")')
+            sheet.update_cell(rowIdx, 2, '=COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "Yes") / (COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "No") + COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "Yes"))')
+            sheet.update_cell(rowIdx, colIdx, 'Yes')
         elif name in attendedNames:
             sheet.update_cell(rowIdx, colIdx, 'Yes')
             attendedNames.pop(attendedNames.index(name))
