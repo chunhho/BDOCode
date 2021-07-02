@@ -66,7 +66,8 @@ def uploadAttendance(attended, date):
         if name in newMember:
             newRow = [name]
             sheet.insert_row(newRow, rowIdx)
-            sheet.update_cell(rowIdx, 2, '=COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "Yes") / (COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "No") + COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "Yes"))')
+            myFormula = '=COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "Yes") / (COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "No") + COUNTIF(Attendance!C' + str(rowIdx) + ':' + str(rowIdx) + ', "Yes"))'
+            sheet.update_cell(rowIdx, 2, myFormula)
             sheet.update_cell(rowIdx, colIdx, 'Yes')
         elif name in attendedNames:
             sheet.update_cell(rowIdx, colIdx, 'Yes')
