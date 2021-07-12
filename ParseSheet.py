@@ -81,19 +81,25 @@ def uploadAttendance(attended, date):
             time.sleep(75)
     return newMember
 
-def deleteUser(user, master=False):
+def deleteUser(user):
+    found = False;
     try:
         cell = sheet.find(user)
         sheet.delete_row(cell.row)
-
-        if master:
-            mastercell = masterSheet.find(user)
-            masterSheet.delete_row(mastercell.row)
-
-        return successQuips(user)
-
+        found = True;
     except Exception as e:
-        return failedQuips(str(e))
+        print("Failed to find user:" + str(user) + " in Attendance Sheet.")
+
+    try:
+        mastercell = masterSheet.find(user)
+        masterSheet.delete_row(mastercell.row)
+        found = True;
+    except Exception as e:
+        print("Failed to find user:" + str(user) + " in Master Sheet.")
+    if found:
+        return successQuips(user)
+    else:
+        return failedQuips(user)        
 
 
 def successQuips(user):

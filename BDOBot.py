@@ -18,7 +18,7 @@ load_dotenv()
 myTOKEN = os.getenv('TOKEN')
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix='$', intents = intents)
+bot = commands.Bot(command_prefix='$', case_insensitive=True, intents = intents)
 bot.remove_command("help")
 deleteTime = 60.0
 
@@ -160,8 +160,8 @@ async def updateSheet(ctx, date):
 
 @bot.command()
 @commands.has_role('Officer')
-async def demolish(ctx, familyName, master=False):
-  await ctx.send(deleteUser(familyName, master))
+async def demolish(ctx, familyName):
+  await ctx.send(deleteUser(familyName))
   await asyncio.sleep(3.0)
   await ctx.message.delete()
 
@@ -380,7 +380,6 @@ async def help(ctx):
   embed.add_field(name="$getPlayerAtt FamilyName Count", value="(Ex. $getPlayerAtt TomatoBisque 3)", inline=False)
   embed.add_field(name="$getVacation", value="Returns list of People with Vacation Role", inline=False)
   embed.add_field(name="$demolish FamilyName ", value="(Ex. $demolish TomatoBisque)", inline=False)
-  embed.add_field(name="$demolish FamilyName Master ", value="(Ex. $demolish TomatoBisque True)", inline=False)
   embed.add_field(name="$uploadTwoWeekAttendance ", value="Updates the Member List Attendance % for the previous 2 weeks", inline=False)
   await ctx.send(embed=embed,delete_after=deleteTime*3)
   await ctx.message.delete()
